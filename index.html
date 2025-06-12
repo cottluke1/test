@@ -312,30 +312,34 @@
 
         // --- MAIN INITIALIZATION LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
-            initializeAppLogic();
+            // [MODIFIED] Wait for external article scripts to load before initializing the app.
+            // This prevents a race condition where the app tries to access article data before it's available.
+            let tries = 0;
+            const dataLoadCheck = setInterval(() => {
+                // We need both present and past articles to be loaded from the external JS files.
+                if (window.presentDayArticles && window.pastArticles) {
+                    clearInterval(dataLoadCheck);
+                    initializeAppLogic(); // Data is ready, so we can run the main app logic.
+                } else if (++tries > 50) { // Fail after 5 seconds to prevent an infinite loop.
+                    clearInterval(dataLoadCheck);
+                    console.error("Article data scripts failed to load in time.");
+                    if(document.getElementById('newsGrid')) {
+                        document.getElementById('newsGrid').innerHTML = '<p class="text-center text-red-500 font-bold">Error: Critical article data failed to load. Please refresh the page.</p>';
+                    }
+                }
+            }, 100);
         });
         
-        // [MODIFIED] Logic updated to correctly load from the `window.pastArticles` array.
+        // This function now runs ONLY after we've confirmed the data is loaded.
         function initializeAppLogic() { 
             const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
             const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
-
-            if (presentArticles.length === 0 && premiumArticles.length === 0) {
-                if (newsGrid) newsGrid.innerHTML = '<p class="text-center text-red-500 font-bold">Error: Main article data failed to load.</p>';
-                return;
-            }
-        
             const todayArticles = [...presentArticles, ...premiumArticles];
-            allDaysData = [todayArticles]; // Start with today's articles (Page 1)
-
-            // --- FIX FOR PAST ARTICLES ---
-            // The previous logic failed because it was looking for separate variables for each day's articles.
-            // This corrected logic reads the single `window.pastArticles` array from your articles_past.js file
-            // and maps the days correctly (e.g., the first item in that array corresponds to page 2, the second to page 3, etc.).
-            if (window.pastArticles && Array.isArray(window.pastArticles)) {
-                allDaysData = allDaysData.concat(window.pastArticles);
-            }
-            // --- END FIX ---
+            
+            // This correctly combines today's articles with the array of past day articles.
+            // allDaysData will be structured like: [ [page1_articles], [page2_articles], ... ]
+            // where page 2 corresponds to the first day in `pastArticles`, page 3 to the second, etc.
+            allDaysData = [todayArticles].concat(window.pastArticles);
             
             displayArticlesForPage(currentPage);
             setupPagination();
@@ -531,9 +535,7 @@
                     pagesToShow = [1, '...', page - 1, page, page + 1, '...', totalPages];
                 }
 
-                // --- FIX FOR PAGINATION --- 
-                // The previous code used `new Set()` which incorrectly removed the second '...'
-                // This now iterates over the `pagesToShow` array directly to preserve both ellipses.
+                // This logic correctly renders the pages and preserves both "..." where needed for middle pages.
                 pagesToShow.forEach(p => {
                     if (p === '...') {
                         paginationContainer.appendChild(createEllipsis());
@@ -541,7 +543,6 @@
                         paginationContainer.appendChild(createButton(p, p, false, p === page));
                     }
                 });
-                // --- END FIX ---
             }
 
             // --- Next Arrow Button ---
