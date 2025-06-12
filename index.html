@@ -455,7 +455,7 @@
             updateFavoriteIcons();
         } 
 
-        // UPDATED: Added Previous and Next buttons to the pagination control
+        // Renders the pagination controls, including Previous, Next, page numbers, and ellipses.
         function setupPagination() {
             paginationContainer.innerHTML = '';
             const pageCount = allDaysData.length;
@@ -464,7 +464,7 @@
             // Previous Button
             const prevButton = document.createElement('button');
             prevButton.className = 'pagination-btn';
-            prevButton.innerHTML = '&laquo;'; // «
+            prevButton.innerHTML = '&laquo;'; // « symbol
             prevButton.disabled = currentPage === 1;
             prevButton.addEventListener('click', () => {
                 if (currentPage > 1) {
@@ -475,44 +475,35 @@
             });
             paginationContainer.appendChild(prevButton);
 
-            // Page Number Buttons (with ellipsis logic)
-            const range = 2;
-            let pagesToShow = [];
-            for (let i = 1; i <= pageCount; i++) {
-                if (i === 1 || i === pageCount || (i >= currentPage - range && i <= currentPage + range)) {
-                    pagesToShow.push(i);
-                }
-            }
-
-            let lastPage = 0;
-            pagesToShow.forEach(page => {
-                if (lastPage !== 0 && page > lastPage + 1) {
+            // Logic to create and show page number buttons
+            const pages = getPagesToShow(pageCount, currentPage);
+            pages.forEach(page => {
+                if (page === '...') {
                     const ellipsis = document.createElement('span');
                     ellipsis.className = 'pagination-ellipsis';
                     ellipsis.textContent = '...';
                     paginationContainer.appendChild(ellipsis);
+                } else {
+                    const button = document.createElement('button');
+                    button.className = 'pagination-btn';
+                    button.textContent = page;
+                    button.dataset.page = page;
+                    if (page === currentPage) button.classList.add('active');
+                    
+                    button.addEventListener('click', (e) => {
+                        const newPage = parseInt(e.currentTarget.dataset.page, 10);
+                        displayArticlesForPage(newPage);
+                        setupPagination();
+                        mainContent.scrollIntoView();
+                    });
+                    paginationContainer.appendChild(button);
                 }
-                
-                const button = document.createElement('button');
-                button.className = 'pagination-btn';
-                button.textContent = page;
-                button.dataset.page = page;
-                if (page === currentPage) button.classList.add('active');
-                
-                button.addEventListener('click', (e) => {
-                    const newPage = parseInt(e.currentTarget.dataset.page, 10);
-                    displayArticlesForPage(newPage);
-                    setupPagination();
-                    mainContent.scrollIntoView();
-                });
-                paginationContainer.appendChild(button);
-                lastPage = page;
             });
 
             // Next Button
             const nextButton = document.createElement('button');
             nextButton.className = 'pagination-btn';
-            nextButton.innerHTML = '&raquo;'; // »
+            nextButton.innerHTML = '&raquo;'; // » symbol
             nextButton.disabled = currentPage === pageCount;
             nextButton.addEventListener('click', () => {
                 if (currentPage < pageCount) {
@@ -522,6 +513,28 @@
                 }
             });
             paginationContainer.appendChild(nextButton);
+        }
+        
+        // Helper function to determine which page numbers and ellipses to show
+        function getPagesToShow(totalPages, currentPage) {
+            const range = 2;
+            let pages = [];
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
+                    pages.push(i);
+                }
+            }
+            
+            let pagesWithEllipsis = [];
+            let lastPage = 0;
+            for (const page of pages) {
+                if (lastPage !== 0 && page > lastPage + 1) {
+                    pagesWithEllipsis.push('...');
+                }
+                pagesWithEllipsis.push(page);
+                lastPage = page;
+            }
+            return pagesWithEllipsis;
         }
 
 
