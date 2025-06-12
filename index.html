@@ -312,25 +312,9 @@
 
         // --- MAIN INITIALIZATION LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
-            waitForDataAndInitialize();
+            initializeAppLogic();
         });
         
-        function waitForDataAndInitialize() {
-            let attempts = 0;
-            const maxAttempts = 50; // 5 seconds
-            const interval = setInterval(() => {
-                attempts++;
-                const dataIsReady = window.presentDayArticles && window.premiumArticles && window.pastArticles && window.sourceImageMap;
-                if (dataIsReady) {
-                    clearInterval(interval);
-                    initializeAppLogic();
-                } else if (attempts > maxAttempts) {
-                    clearInterval(interval);
-                    if (newsGrid) newsGrid.innerHTML = '<p class="text-center text-red-500 font-bold">Error: Critical data files failed to load in time.</p>';
-                }
-            }, 100);
-        }
-
         function initializeAppLogic() { 
             const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
             const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
@@ -513,57 +497,47 @@
             }
 
             // --- Previous Button ---
-            paginationContainer.appendChild(createButton('&lt;', currentPage - 1, currentPage === 1));
+            paginationContainer.appendChild(createButton('&larr; Previous', currentPage - 1, currentPage === 1));
 
             // --- Page Number Logic ---
             const pagesToShow = [];
-            const windowSize = 2; // Show 2 pages on each side of the current page
+            const window = 1; // Number of pages to show on each side of the current page
 
             // Always show the first page
             pagesToShow.push(1);
-            
-            // Determine the range of pages to show around the current page
-            let startPage = Math.max(2, currentPage - windowSize);
-            let endPage = Math.min(totalPages - 1, currentPage + windowSize);
 
-            // Add ellipsis if there is a gap after the first page
-            if (startPage > 2) {
+            // Show ellipsis if there's a gap after the first page
+            if (currentPage > 1 + window + 1) {
                 pagesToShow.push('...');
             }
-
-            // Add the pages in the calculated window
-            for (let i = startPage; i <= endPage; i++) {
+            
+            // Show pages in the "window" around the current page
+            for (let i = Math.max(2, currentPage - window); i <= Math.min(totalPages - 1, currentPage + window); i++) {
                 pagesToShow.push(i);
             }
 
-            // Add ellipsis if there is a gap before the last page
-            if (endPage < totalPages - 1) {
+            // Show ellipsis if there's a gap before the last page
+            if (currentPage < totalPages - window - 1) {
                 pagesToShow.push('...');
             }
             
-            // Always show the last page if it's not already included
+            // Always show the last page
             if (totalPages > 1) {
-                 pagesToShow.push(totalPages);
+                pagesToShow.push(totalPages);
             }
-            
+
             // Render the buttons and ellipses, avoiding duplicates
             const uniquePages = [...new Set(pagesToShow)];
             uniquePages.forEach(page => {
-                 if (page === '...') {
-                    // Check if the previous element was already an ellipsis to avoid duplicates
-                    if (paginationContainer.lastChild.textContent !== '...') {
-                        paginationContainer.appendChild(createEllipsis());
-                    }
+                if (page === '...') {
+                    paginationContainer.appendChild(createEllipsis());
                 } else {
-                    // Check if the button already exists to avoid duplicates
-                    if (!paginationContainer.querySelector(`[data-page='${page}']`)) {
-                       paginationContainer.appendChild(createButton(page, page, false, page === currentPage));
-                    }
+                    paginationContainer.appendChild(createButton(page, page, false, page === currentPage));
                 }
             });
 
             // --- Next Button ---
-            paginationContainer.appendChild(createButton('&gt;', currentPage + 1, currentPage === totalPages));
+            paginationContainer.appendChild(createButton('Next &rarr;', currentPage + 1, currentPage === totalPages));
         }
 
 
