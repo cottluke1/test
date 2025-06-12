@@ -315,7 +315,7 @@
             initializeAppLogic();
         });
         
-        // [MODIFIED] This function now dynamically loads past articles from variables like 'past_d2_1'
+        // [MODIFIED] This function now dynamically loads and concatenates all past article chunks for each day.
         function initializeAppLogic() { 
             const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
             const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
@@ -326,16 +326,24 @@
             }
         
             const todayArticles = [...presentArticles, ...premiumArticles];
-            allDaysData = [todayArticles]; // Start with today's articles
+            allDaysData = [todayArticles]; // Start with today's articles (Page 1)
 
-            // Dynamically load past articles based on the variable naming convention you mentioned
-            for (let i = 2; i <= 30; i++) { // For days 2 to 30
-                const varName = `past_d${i}_1`; 
-                if (window[varName] && Array.isArray(window[varName])) {
-                    allDaysData.push(window[varName]);
-                } else {
-                    allDaysData.push([]); // Push an empty array to keep page indices correct
+            // Dynamically load past articles for pages 2 through 30
+            for (let day = 2; day <= 30; day++) {
+                let articlesForThisDay = [];
+                let chunkIndex = 1;
+                let foundChunk = true;
+                // Loop to find all chunks for a given day (e.g., past_d2_1, past_d2_2, ...)
+                while (foundChunk) {
+                    const varName = `past_d${day}_${chunkIndex}`;
+                    if (window[varName] && Array.isArray(window[varName])) {
+                        articlesForThisDay = articlesForThisDay.concat(window[varName]);
+                        chunkIndex++;
+                    } else {
+                        foundChunk = false; // Stop when no more chunks are found for this day
+                    }
                 }
+                allDaysData.push(articlesForThisDay);
             }
             
             displayArticlesForPage(currentPage);
@@ -416,10 +424,8 @@
                 articlesForDay = articlesForDay.filter(a => a.title.toLowerCase().includes(searchQuery) || (a.source && a.source.toLowerCase().includes(searchQuery)));
             }
 
-            if (articlesForDay.length === 0 && (page > allDaysData.length || allDaysData[page-1].length === 0)) { 
+            if (articlesForDay.length === 0 ) { 
                 newsGrid.innerHTML = `<p class="text-center text-gray-500 col-span-full">No articles found for ${pageInfo.title}.</p>`; 
-            } else if (articlesForDay.length === 0) {
-                newsGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No articles found for the selected criteria.</p>';
             } else {
                 articlesForDay.forEach(article => { 
                     const isPremiumArticle = article.premium && !isSubscribed;
@@ -474,14 +480,15 @@
             updateFavoriteIcons();
         } 
 
-        // [MODIFIED] This function now uses arrow icons instead of text for previous/next buttons.
+        // [MODIFIED] This function implements the specific pagination logic based on the user's images and request.
 		function setupPagination() {
             if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
-            const totalPages = 30; // Hardcode to 30 days of pagination
+            const totalPages = 30;
+            const page = currentPage; // Use a shorter alias for the current page
 
-            // Helper function to create a button
-            const createButton = (text, page, isDisabled = false, isCurrent = false) => {
+            // Helper function to create a button element
+            const createButton = (text, pageNumber, isDisabled = false, isCurrent = false) => {
                 const btn = document.createElement('button');
                 btn.className = 'pagination-btn';
                 btn.innerHTML = text;
@@ -490,8 +497,8 @@
                     btn.classList.add('active');
                 }
                 btn.addEventListener('click', () => {
-                    if (page) {
-                        displayArticlesForPage(page);
+                    if (pageNumber) {
+                        displayArticlesForPage(pageNumber);
                         setupPagination();
                         mainContent.scrollIntoView({ behavior: 'smooth' });
                     }
@@ -499,7 +506,7 @@
                 return btn;
             };
 
-            // Helper function to create an ellipsis
+            // Helper function to create an ellipsis "..." element
             const createEllipsis = () => {
                 const ellipsis = document.createElement('span');
                 ellipsis.className = 'pagination-ellipsis';
@@ -507,48 +514,45 @@
                 return ellipsis;
             }
 
-            // --- Previous Button ---
-            paginationContainer.appendChild(createButton('&larr;', currentPage - 1, currentPage === 1));
+            // --- Previous Arrow Button ---
+            paginationContainer.appendChild(createButton('&larr;', page - 1, page === 1));
 
             // --- Page Number Logic ---
-            const pagesToShow = [];
-            const window = 1; // Number of pages to show on each side of the current page
-
-            // Always show the first page
-            pagesToShow.push(1);
-
-            // Show ellipsis if there's a gap after the first page
-            if (currentPage > 1 + window + 1) {
-                pagesToShow.push('...');
-            }
-            
-            // Show pages in the "window" around the current page
-            for (let i = Math.max(2, currentPage - window); i <= Math.min(totalPages - 1, currentPage + window); i++) {
-                pagesToShow.push(i);
-            }
-
-            // Show ellipsis if there's a gap before the last page
-            if (currentPage < totalPages - window - 1) {
-                pagesToShow.push('...');
-            }
-            
-            // Always show the last page
-            if (totalPages > 1) {
-                pagesToShow.push(totalPages);
-            }
-
-            // Render the buttons and ellipses, avoiding duplicates
-            const uniquePages = [...new Set(pagesToShow)];
-            uniquePages.forEach(page => {
-                if (page === '...') {
-                    paginationContainer.appendChild(createEllipsis());
-                } else {
-                    paginationContainer.appendChild(createButton(page, page, false, page === currentPage));
+            if (totalPages <= 7) { 
+                // Simple case: If there are 7 or fewer pages, show all of them without ellipses
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationContainer.appendChild(createButton(i, i, false, i === page));
                 }
-            });
+            } else {
+                // Complex case: Use ellipses for a large number of pages
+                let pagesToShow = [];
+                
+                // Case 1: Near the beginning (pages 1-4) -> Show 1, 2, 3, 4, 5, ..., 30
+                if (page < 5) {
+                    pagesToShow = [1, 2, 3, 4, 5, '...', totalPages];
+                } 
+                // Case 2: Near the end (pages 27-30) -> Show 1, ..., 26, 27, 28, 29, 30
+                else if (page > totalPages - 4) {
+                    pagesToShow = [1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+                }
+                // Case 3: In the middle -> Show 1, ..., current-1, current, current+1, ..., 30
+                else {
+                    pagesToShow = [1, '...', page - 1, page, page + 1, '...', totalPages];
+                }
 
-            // --- Next Button ---
-            paginationContainer.appendChild(createButton('&rarr;', currentPage + 1, currentPage === totalPages));
+                // Render the page buttons and ellipses from the generated array
+                const uniquePages = [...new Set(pagesToShow)]; // Remove duplicates that might occur in edge cases
+                uniquePages.forEach(p => {
+                    if (p === '...') {
+                        paginationContainer.appendChild(createEllipsis());
+                    } else {
+                        paginationContainer.appendChild(createButton(p, p, false, p === page));
+                    }
+                });
+            }
+
+            // --- Next Arrow Button ---
+            paginationContainer.appendChild(createButton('&rarr;', page + 1, page === totalPages));
         }
 
 
