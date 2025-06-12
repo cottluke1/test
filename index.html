@@ -299,32 +299,29 @@
         const mainContent = document.getElementById('main-content');
 
         // --- MAIN INITIALIZATION LOGIC ---
+        // UPDATED: Replaced polling with a more direct initialization on DOMContentLoaded.
         document.addEventListener('DOMContentLoaded', () => {
-            waitForDataAndInitialize();
+            initializeAppLogic();
         });
-
-        function waitForDataAndInitialize() {
-            let attempts = 0;
-            const maxAttempts = 50;
-            const interval = setInterval(() => {
-                attempts++;
-                const dataIsReady = window.presentDayArticles && window.premiumArticles && window.pastArticles && window.sourceImageMap;
-                if (dataIsReady) {
-                    clearInterval(interval);
-                    initializeAppLogic();
-                } else if (attempts > maxAttempts) {
-                    clearInterval(interval);
-                    if (newsGrid) newsGrid.innerHTML = '<p class="text-center text-red-500 font-bold">Error: Critical data files failed to load.</p>';
-                }
-            }, 100);
-        }
         
+        // UPDATED: This function is now called directly and contains checks for data availability.
         function initializeAppLogic() { 
-            const todayArticles = [...window.presentDayArticles, ...window.premiumArticles];
-            // The master data array combines today's news with all past day arrays.
-            // Its length determines the total number of pages for pagination.
-            allDaysData = [todayArticles, ...window.pastArticles];
+            // Gracefully handle cases where data files might not load or be defined.
+            const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
+            const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
+            const pastArticles = Array.isArray(window.pastArticles) ? window.pastArticles : [];
+
+            // Check if critical data for today is missing.
+            if (presentArticles.length === 0 && premiumArticles.length === 0) {
+                if (newsGrid) newsGrid.innerHTML = '<p class="text-center text-red-500 font-bold">Error: Main article data failed to load.</p>';
+                return; // Stop if there's nothing to show for today.
+            }
+        
+            const todayArticles = [...presentArticles, ...premiumArticles];
+            // The master data array is now safely constructed.
+            allDaysData = [todayArticles, ...pastArticles];
             
+            // Initial render and event listener setup.
             displayArticlesForPage(currentPage);
             setupPagination();
             
@@ -390,11 +387,9 @@
             let articlesForDay = allDaysData[page - 1] || [];
             
             const searchQuery = searchInput.value.toLowerCase();
-            // UPDATED: Get all active category buttons for multi-select
             const activeCategoryBtns = document.querySelectorAll('#categoryList .filter-button.active');
             const activeCategories = Array.from(activeCategoryBtns).map(btn => btn.dataset.category);
 
-            // UPDATED: Filter logic for multiple categories
             if (activeCategories.length > 0) {
                 articlesForDay = articlesForDay.filter(a => activeCategories.includes(a.category));
             }
@@ -459,8 +454,6 @@
             updateFavoriteIcons();
         } 
 
-        // The pagination logic is dynamic based on allDaysData.length.
-        // It will automatically adjust to the number of days in your articles_past.js file.
         function setupPagination() {
             paginationContainer.innerHTML = '';
             const pageCount = allDaysData.length;
@@ -501,13 +494,10 @@
             });
         }
 
-        // UPDATED: Handles multiple category selections
         function handleCategoryFilter(e) {
             const button = e.target.closest('.filter-button');
             if (!button) return;
-            // Simply toggle the 'active' class on the clicked button
             button.classList.toggle('active');
-            // Re-render the articles with the updated filter selection
             displayArticlesForPage(currentPage);
         }
         
