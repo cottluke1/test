@@ -16,8 +16,8 @@
     <script src="source_images.js?v=20250612v2" defer></script>
     <script src="articles_present.js?v=20250612v2" defer></script>
     <script src="articles_premium.js?v=20250612v2" defer></script>
-    <!-- UPDATED: Referencing the 30-day past articles file -->
-    <script src="articles_past.js?v=20250612v3" defer></script>
+    <!-- Referencing the potentially updated past articles file -->
+    <script src="articles_past.js?v=20250612v4" defer></script>
 
     <style>
         /* Custom base styles */
@@ -93,7 +93,6 @@
             pointer-events: none;
         }
         
-        /* UPDATED: Overlay has a gradient background now */
         .locked-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center; z-index: 10;
@@ -104,7 +103,6 @@
         }
         .news-card.locked:hover .locked-overlay { opacity: 1; }
         
-        /* UPDATED: This container has no background/border, it just aligns content */
         .locked-content {
             display: flex; align-items: center;
             width: 100%;
@@ -115,7 +113,6 @@
         }
         .news-card.locked:hover .locked-content { transform: translateY(0); }
         
-        /* UPDATED: Text content now expands */
         .locked-text-content { text-align: left; flex-grow: 1; }
         .locked-title { font-size: 1.1rem; font-weight: 600; color: #E7E9EA; line-height: 1.3; margin-bottom: 0.25rem; }
         .locked-text { color: #b0b0b0; font-size: 0.8rem; }
@@ -192,7 +189,6 @@
         .favorite-btn svg { width: 100%; height: 100%; stroke-width: 1.5; stroke: currentColor; fill: none; }
         .favorite-btn.favorited svg { fill: #00BFFF; stroke: #00BFFF; }
 
-        /* UPDATED: Pagination styles for 30 days with ellipsis */
         .pagination-container { display: flex; justify-content: center; align-items: center; margin-top: 3rem; padding: 1rem; gap: 0.35rem; }
         .pagination-btn, .pagination-ellipsis {
             background-color: rgba(26, 26, 26, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
@@ -312,42 +308,35 @@
             const maxAttempts = 50;
             const interval = setInterval(() => {
                 attempts++;
-                // Check if all necessary data objects are loaded on the window
                 const dataIsReady = window.presentDayArticles && window.premiumArticles && window.pastArticles && window.sourceImageMap;
                 if (dataIsReady) {
                     clearInterval(interval);
                     initializeAppLogic();
                 } else if (attempts > maxAttempts) {
                     clearInterval(interval);
-                    // Display an error if data fails to load after several attempts
                     if (newsGrid) newsGrid.innerHTML = '<p class="text-center text-red-500 font-bold">Error: Critical data files failed to load.</p>';
                 }
             }, 100);
         }
         
-        // --- APP LOGIC --- 
         function initializeAppLogic() { 
-            // Combine today's free and premium articles
             const todayArticles = [...window.presentDayArticles, ...window.premiumArticles];
-            // Create the master array with today's articles first, followed by all past day arrays
+            // The master data array combines today's news with all past day arrays.
+            // Its length determines the total number of pages for pagination.
             allDaysData = [todayArticles, ...window.pastArticles];
             
-            // Initial display
             displayArticlesForPage(currentPage);
             setupPagination();
             
-            // Event Listeners
             categoryList.addEventListener('click', handleCategoryFilter);
             searchInput.addEventListener('input', () => displayArticlesForPage(currentPage));
             newsGrid.addEventListener('click', handleFavoriteClick);
             window.addEventListener('resize', adjustLayoutForHeader);
             
-            // Initial setup calls
             adjustLayoutForHeader();
             updateTickerBanner();
         }
 
-        // Adjusts the top margin of the ticker banner to account for the fixed header height
         function adjustLayoutForHeader() {
             const header = document.querySelector('nav.fixed');
             const tickerBanner = document.querySelector('.ticker-banner');
@@ -359,12 +348,10 @@
             }
         }
         
-        // Fetches and updates the live data for the scrolling ticker banner
         async function updateTickerBanner() {
             const tickerContent = document.getElementById('tickerContent');
             if (!tickerContent || !FINNHUB_API_KEY) return;
             let contentHTML = '';
-            // Loop through symbols and fetch quote data from Finnhub API
             for (const symbol of TICKER_ITEMS_TO_SHOW) {
                 try {
                     const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${FINNHUB_API_KEY}`);
@@ -381,13 +368,11 @@
                     console.error('Error fetching ticker data for', symbol, error);
                 }
             }
-            // Repeat content to ensure a seamless scrolling effect
             tickerContent.innerHTML = contentHTML.repeat(10);
         }
 
-        // Gets the appropriate title and date object for a given page number
         function getPageDateInfo(page) {
-            const today = new Date('2025-06-12T12:00:00Z'); // Using a fixed date for consistent presentation
+            const today = new Date('2025-06-12T12:00:00Z');
             if (page === 1) return { title: 'Latest News', date: today };
             const dateForPage = new Date(today);
             dateForPage.setDate(today.getDate() - (page - 1));
@@ -396,7 +381,6 @@
             return { title: `${dayName}, ${dateString}`, date: dateForPage };
         }
         
-        // Main function to render articles for a specific page
         function displayArticlesForPage(page) {
             currentPage = page;
             newsGrid.innerHTML = ''; 
@@ -405,22 +389,25 @@
 
             let articlesForDay = allDaysData[page - 1] || [];
             
-            // Apply search and category filters
             const searchQuery = searchInput.value.toLowerCase();
-            const activeCategoryBtn = document.querySelector('#categoryList .filter-button.active');
-            const activeCategory = activeCategoryBtn ? activeCategoryBtn.dataset.category : null;
+            // UPDATED: Get all active category buttons for multi-select
+            const activeCategoryBtns = document.querySelectorAll('#categoryList .filter-button.active');
+            const activeCategories = Array.from(activeCategoryBtns).map(btn => btn.dataset.category);
 
-            if (activeCategory) articlesForDay = articlesForDay.filter(a => a.category === activeCategory);
-            if (searchQuery) articlesForDay = articlesForDay.filter(a => a.title.toLowerCase().includes(searchQuery) || (a.source && a.source.toLowerCase().includes(searchQuery)));
+            // UPDATED: Filter logic for multiple categories
+            if (activeCategories.length > 0) {
+                articlesForDay = articlesForDay.filter(a => activeCategories.includes(a.category));
+            }
+            if (searchQuery) {
+                articlesForDay = articlesForDay.filter(a => a.title.toLowerCase().includes(searchQuery) || (a.source && a.source.toLowerCase().includes(searchQuery)));
+            }
 
             if (articlesForDay.length === 0) { 
-                newsGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No articles found.</p>'; 
+                newsGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No articles found for the selected criteria.</p>'; 
                 return; 
             } 
 
-            // Create and append article cards
             articlesForDay.forEach(article => { 
-                // Determine if the article should be locked for non-subscribers
                 const isPremiumArticle = article.premium && !isSubscribed;
                 const isPastPage = page > 1 && !isSubscribed;
                 const shouldBeLocked = isPremiumArticle || isPastPage;
@@ -433,7 +420,6 @@
                 const sourceInitial = (article.source && article.source.length > 0) ? article.source.charAt(0) : 'N';
                 const imageUrl = safeSourceImageMap[article.source] || `https://placehold.co/50/2a2a2a/ffffff?text=${sourceInitial}`;
                 
-                // Define different overlay text for premium vs. past articles
                 const overlayText = page > 1 
                     ? { title: 'Access Past News', text: 'Go premium to unlock the 30-day archive.' }
                     : { title: 'Unlock Premium Content', text: 'Subscribe to get instant access.' };
@@ -473,13 +459,13 @@
             updateFavoriteIcons();
         } 
 
-        // UPDATED: Smart pagination logic for 30+ days
+        // The pagination logic is dynamic based on allDaysData.length.
+        // It will automatically adjust to the number of days in your articles_past.js file.
         function setupPagination() {
             paginationContainer.innerHTML = '';
             const pageCount = allDaysData.length;
-            if (pageCount <= 1) return; // Don't show pagination if only one page
+            if (pageCount <= 1) return;
 
-            // Show a few pages around the current page, plus the first and last page.
             const range = 2; 
             let pagesToShow = [];
 
@@ -490,9 +476,7 @@
             }
 
             let lastPage = 0;
-            // Create buttons and ellipses
             pagesToShow.forEach(page => {
-                // If there's a gap between page numbers, insert an ellipsis
                 if (lastPage !== 0 && page > lastPage + 1) {
                      const ellipsis = document.createElement('span');
                      ellipsis.className = 'pagination-ellipsis';
@@ -509,29 +493,24 @@
                 button.addEventListener('click', (e) => {
                     const newPage = parseInt(e.currentTarget.dataset.page, 10);
                     displayArticlesForPage(newPage);
-                    setupPagination(); // Re-render pagination to update active state and ellipses
-                    mainContent.scrollIntoView(); // Scroll to top of content on page change
+                    setupPagination();
+                    mainContent.scrollIntoView();
                 });
                 paginationContainer.appendChild(button);
                 lastPage = page;
             });
         }
 
-        // Handles clicks on the category filter buttons
+        // UPDATED: Handles multiple category selections
         function handleCategoryFilter(e) {
             const button = e.target.closest('.filter-button');
             if (!button) return;
-            const currentActive = document.querySelector('#categoryList .filter-button.active');
-            // Deactivate other buttons
-            if (currentActive && currentActive !== button) {
-                currentActive.classList.remove('active');
-            }
+            // Simply toggle the 'active' class on the clicked button
             button.classList.toggle('active');
-            // Re-render articles with the new filter
+            // Re-render the articles with the updated filter selection
             displayArticlesForPage(currentPage);
         }
         
-        // Handles clicks on the favorite (bookmark) button
         function handleFavoriteClick(e) {
             const button = e.target.closest('.favorite-btn');
             if (button) {
@@ -540,20 +519,18 @@
             }
         }
         
-        // Adds or removes an article ID from localStorage
         function toggleFavorite(articleId) {
             let favorites = JSON.parse(localStorage.getItem('favoriteArticles')) || [];
             const index = favorites.indexOf(articleId);
             if (index > -1) {
-                favorites.splice(index, 1); // Remove if it exists
+                favorites.splice(index, 1);
             } else {
-                favorites.push(articleId); // Add if it doesn't
+                favorites.push(articleId);
             }
             localStorage.setItem('favoriteArticles', JSON.stringify(favorites));
-            updateFavoriteIcons(); // Update UI
+            updateFavoriteIcons();
         }
         
-        // Updates the visual state of all favorite buttons on the page
         function updateFavoriteIcons() {
             let favorites = JSON.parse(localStorage.getItem('favoriteArticles')) || [];
             document.querySelectorAll('.favorite-btn').forEach(btn => {
@@ -565,7 +542,6 @@
             });
         }
         
-        // Functions to show and hide the terms/privacy modals
         function showTermsModal(event) { event.preventDefault(); document.getElementById('termsContent').style.display = 'block'; }
         function closeTermsModal() { document.getElementById('termsContent').style.display = 'none'; }
         function showPrivacyModal(event) { event.preventDefault(); document.getElementById('privacyContent').style.display = 'block'; }
