@@ -192,13 +192,18 @@
  		.pagination-btn {
  			background-color: rgba(26, 26, 26, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
  			border: 1px solid #333333; color: #B0B0B0; font-weight: 500; margin: 0 0.35rem; border-radius: 0.5rem;
- 			width: 2.75rem; height: 2.75rem; transition: all 0.2s ease;
+ 			padding: 0.5rem 1rem;
+            min-width: 2.75rem; height: 2.75rem; transition: all 0.2s ease;
  		}
- 		.pagination-btn:hover { background-color: rgba(0, 191, 255, 0.15); border-color: rgba(0, 191, 255, 0.7); color: #FFFFFF; transform: translateY(-2px); }
+ 		.pagination-btn:hover:not(:disabled) { background-color: rgba(0, 191, 255, 0.15); border-color: rgba(0, 191, 255, 0.7); color: #FFFFFF; transform: translateY(-2px); }
  		.pagination-btn.active {
  			background-color: rgb(0, 191, 255); color: #FFFFFF; border-color: #00BFFF; font-weight: 600;
  			box-shadow: 0 0 15px -2px rgba(0, 191, 255, 0.5);
  		}
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
         
         .footer { background-color: #080808; color: #888888; padding: 3rem 1rem; margin-top: 4rem; border-top: 1px solid #222222; }
         .terms-privacy-content {
@@ -318,7 +323,10 @@
             setupPagination();
             
             categoryList.addEventListener('click', handleCategoryFilter);
-            searchInput.addEventListener('input', () => displayArticlesForPage(currentPage));
+            searchInput.addEventListener('input', () => {
+                displayArticlesForPage(currentPage);
+                setupPagination();
+            });
             newsGrid.addEventListener('click', handleFavoriteClick);
             window.addEventListener('resize', adjustLayoutForHeader);
             
@@ -447,30 +455,60 @@
         } 
 
  		function setupPagination() {
- 			paginationContainer.innerHTML = '';
- 			const pageCount = allDaysData.length;
- 			for (let i = 1; i <= pageCount; i++) { 
- 				const button = document.createElement('button'); 
- 				button.className = 'pagination-btn'; 
- 				button.textContent = i; 
- 				button.dataset.page = i; 
- 				if (i === currentPage) button.classList.add('active'); 
- 				button.addEventListener('click', (e) => { 
- 					const page = parseInt(e.currentTarget.dataset.page, 10);
- 					document.querySelector('.pagination-btn.active')?.classList.remove('active');
- 					e.currentTarget.classList.add('active');
- 					displayArticlesForPage(page);
- 					mainContent.scrollIntoView();
- 				}); 
- 				paginationContainer.appendChild(button); 
- 			}
- 		}
+            if (!paginationContainer) return;
+            paginationContainer.innerHTML = '';
+            const pageCount = allDaysData.length;
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = 'pagination-btn';
+            prevBtn.innerHTML = '&larr; Previous';
+            prevBtn.disabled = (currentPage === 1);
+            prevBtn.onclick = () => {
+                if (currentPage > 1) {
+                    displayArticlesForPage(currentPage - 1);
+                    setupPagination(); // Re-render pagination
+                }
+            };
+            paginationContainer.appendChild(prevBtn);
+
+            // Numbered Buttons
+            for (let i = 1; i <= pageCount; i++) {
+                const button = document.createElement('button');
+                button.className = 'pagination-btn';
+                button.textContent = i;
+                button.dataset.page = i;
+                if (i === currentPage) button.classList.add('active');
+                
+                button.addEventListener('click', (e) => {
+                    const page = parseInt(e.currentTarget.dataset.page, 10);
+                    displayArticlesForPage(page);
+                    setupPagination(); // Re-render pagination
+                    mainContent.scrollIntoView({behavior: "smooth"});
+                });
+                paginationContainer.appendChild(button);
+            }
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = 'pagination-btn';
+            nextBtn.innerHTML = 'Next &rarr;';
+            nextBtn.disabled = (currentPage === pageCount);
+            nextBtn.onclick = () => {
+                if (currentPage < pageCount) {
+                    displayArticlesForPage(currentPage + 1);
+                    setupPagination(); // Re-render pagination
+                }
+            };
+            paginationContainer.appendChild(nextBtn);
+        }
 
         function handleCategoryFilter(e) {
             const button = e.target.closest('.filter-button');
             if (!button) return;
             button.classList.toggle('active');
             displayArticlesForPage(currentPage);
+            setupPagination();
         }
         
         function handleFavoriteClick(e) {
