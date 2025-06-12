@@ -315,7 +315,7 @@
             initializeAppLogic();
         });
         
-        // [MODIFIED] This function now dynamically loads and concatenates all past article chunks for each day.
+        // [MODIFIED] This function is now corrected to load data from the single `window.pastArticles` array.
         function initializeAppLogic() { 
             const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
             const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
@@ -328,23 +328,14 @@
             const todayArticles = [...presentArticles, ...premiumArticles];
             allDaysData = [todayArticles]; // Start with today's articles (Page 1)
 
-            // Dynamically load past articles for pages 2 through 30
-            for (let day = 2; day <= 30; day++) {
-                let articlesForThisDay = [];
-                let chunkIndex = 1;
-                let foundChunk = true;
-                // Loop to find all chunks for a given day (e.g., past_d2_1, past_d2_2, ...)
-                while (foundChunk) {
-                    const varName = `past_d${day}_${chunkIndex}`;
-                    if (window[varName] && Array.isArray(window[varName])) {
-                        articlesForThisDay = articlesForThisDay.concat(window[varName]);
-                        chunkIndex++;
-                    } else {
-                        foundChunk = false; // Stop when no more chunks are found for this day
-                    }
-                }
-                allDaysData.push(articlesForThisDay);
+            // --- FIX STARTS HERE ---
+            // The previous logic tried to find variables like `past_d2_1`, which don't exist.
+            // The new logic correctly reads the `window.pastArticles` array from your JS file.
+            if (window.pastArticles && Array.isArray(window.pastArticles)) {
+                // The `concat` method adds all the daily article arrays from `pastArticles` into our main `allDaysData` array.
+                allDaysData = allDaysData.concat(window.pastArticles);
             }
+            // --- FIX ENDS HERE ---
             
             displayArticlesForPage(currentPage);
             setupPagination();
@@ -480,7 +471,7 @@
             updateFavoriteIcons();
         } 
 
-        // [MODIFIED] This function implements the specific pagination logic based on the user's images and request.
+        // This function implements the specific pagination logic based on the user's images and request.
 		function setupPagination() {
             if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
