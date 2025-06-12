@@ -315,7 +315,7 @@
             initializeAppLogic();
         });
         
-        // [MODIFIED] This function is now corrected to load data from the single `window.pastArticles` array.
+        // [MODIFIED] Logic updated to correctly load from the `window.pastArticles` array.
         function initializeAppLogic() { 
             const presentArticles = Array.isArray(window.presentDayArticles) ? window.presentDayArticles : [];
             const premiumArticles = Array.isArray(window.premiumArticles) ? window.premiumArticles : [];
@@ -328,14 +328,14 @@
             const todayArticles = [...presentArticles, ...premiumArticles];
             allDaysData = [todayArticles]; // Start with today's articles (Page 1)
 
-            // --- FIX STARTS HERE ---
-            // The previous logic tried to find variables like `past_d2_1`, which don't exist.
-            // The new logic correctly reads the `window.pastArticles` array from your JS file.
+            // --- FIX FOR PAST ARTICLES ---
+            // The previous logic failed because it was looking for separate variables for each day's articles.
+            // This corrected logic reads the single `window.pastArticles` array from your articles_past.js file
+            // and maps the days correctly (e.g., the first item in that array corresponds to page 2, the second to page 3, etc.).
             if (window.pastArticles && Array.isArray(window.pastArticles)) {
-                // The `concat` method adds all the daily article arrays from `pastArticles` into our main `allDaysData` array.
                 allDaysData = allDaysData.concat(window.pastArticles);
             }
-            // --- FIX ENDS HERE ---
+            // --- END FIX ---
             
             displayArticlesForPage(currentPage);
             setupPagination();
@@ -471,7 +471,7 @@
             updateFavoriteIcons();
         } 
 
-        // This function implements the specific pagination logic based on the user's images and request.
+        // [MODIFIED] This function implements the specific pagination logic based on the user's images and request.
 		function setupPagination() {
             if (!paginationContainer) return;
             paginationContainer.innerHTML = '';
@@ -531,15 +531,17 @@
                     pagesToShow = [1, '...', page - 1, page, page + 1, '...', totalPages];
                 }
 
-                // Render the page buttons and ellipses from the generated array
-                const uniquePages = [...new Set(pagesToShow)]; // Remove duplicates that might occur in edge cases
-                uniquePages.forEach(p => {
+                // --- FIX FOR PAGINATION --- 
+                // The previous code used `new Set()` which incorrectly removed the second '...'
+                // This now iterates over the `pagesToShow` array directly to preserve both ellipses.
+                pagesToShow.forEach(p => {
                     if (p === '...') {
                         paginationContainer.appendChild(createEllipsis());
                     } else {
                         paginationContainer.appendChild(createButton(p, p, false, p === page));
                     }
                 });
+                // --- END FIX ---
             }
 
             // --- Next Arrow Button ---
