@@ -4,18 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linq - Your Energy News</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+    <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+    <link href="[https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap)" rel="stylesheet">
+    <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)" rel="stylesheet">
+    <script src="[https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js](https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js)"></script>
+    <script src="[https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js](https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js)"></script>
     
     <script src="source_images.js?v=20250612v2" defer></script>
     <script src="articles_present.js?v=20250612v2" defer></script>
     <script src="articles_premium.js?v=20250612v2" defer></script>
-    <!-- Referencing the potentially updated past articles file -->
     <script src="articles_past.js?v=20250612v4" defer></script>
 
     <style>
@@ -188,27 +187,46 @@
         .favorite-btn svg { width: 100%; height: 100%; stroke-width: 1.5; stroke: currentColor; fill: none; }
         .favorite-btn.favorited svg { fill: #00BFFF; stroke: #00BFFF; }
 
-        .pagination-container { display: flex; justify-content: center; align-items: center; margin-top: 3rem; padding: 1rem; gap: 0.35rem; }
-        .pagination-btn, .pagination-ellipsis {
-            background-color: rgba(26, 26, 26, 0.7); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
-            border: 1px solid #333333; color: #B0B0B0; font-weight: 500; border-radius: 0.5rem;
-            min-width: 2.75rem; height: 2.75rem; padding: 0 0.5rem;
-            display: inline-flex; justify-content: center; align-items: center;
+        .pagination-container { display: flex; justify-content: center; align-items: center; margin-top: 2rem; padding-bottom: 2rem; gap: 0.5rem; }
+        .pagination-btn {
+            background-color: transparent;
+            border: 1px solid #3b82f6; /* blue-500 */
+            color: #3b82f6; /* blue-500 */
+            font-weight: 500;
+            border-radius: 0.375rem;
+            min-width: 2.5rem;
+            height: 2.5rem;
+            padding: 0 0.75rem;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
             transition: all 0.2s ease;
             cursor: pointer;
         }
-        .pagination-btn:hover:not(:disabled) { 
-            background-color: rgba(0, 191, 255, 0.15); border-color: rgba(0, 191, 255, 0.7); color: #FFFFFF; transform: translateY(-2px); 
+        .pagination-btn:hover:not(:disabled) {
+            background-color: #3b82f6; /* blue-500 */
+            color: #FFFFFF;
         }
         .pagination-btn.active {
-            background-color: rgb(0, 191, 255); color: #FFFFFF; border-color: #00BFFF; font-weight: 600;
-            box-shadow: 0 0 15px -2px rgba(0, 191, 255, 0.5);
+            background-color: #3b82f6; /* blue-500 */
+            color: #FFFFFF;
+            font-weight: 600;
+            box-shadow: 0 0 15px -2px rgba(59, 130, 246, 0.5); /* blue-500 */
         }
         .pagination-btn:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
+            border-color: #4b5563; /* gray-600 */
+            color: #6b7280; /* gray-500 */
         }
-        .pagination-ellipsis { background-color: transparent; border: none; pointer-events: none; }
+        .pagination-ellipsis {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.5rem;
+            padding: 0 0.5rem;
+            color: #6E767D;
+        }
         
         .footer { background-color: #080808; color: #888888; padding: 3rem 1rem; margin-top: 4rem; border-top: 1px solid #222222; }
         .terms-privacy-content {
@@ -249,11 +267,12 @@
                     <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-8">
                         <h2 id="sectionDateTitle" class="section-title !mb-3 sm:!mb-0 !border-none">Latest News</h2>
                         <div class="relative w-full sm:w-auto sm:max-w-xs search-container">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            <svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-4 h-4 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             <input type="search" id="searchInput" placeholder="Search news..." class="search-input !mb-0 pl-10">
                         </div>
                     </div>
                     <div class="space-y-6" id="newsGrid"></div>
+                    <!-- Pagination Container -->
                     <div id="paginationContainer" class="pagination-container"></div>
                 </section>
             </div>
@@ -323,7 +342,6 @@
             allDaysData = [todayArticles, ...pastArticles];
             
             displayArticlesForPage(currentPage);
-            setupPagination();
             
             categoryList.addEventListener('click', handleCategoryFilter);
             searchInput.addEventListener('input', () => displayArticlesForPage(currentPage));
@@ -369,8 +387,11 @@
         }
 
         function getPageDateInfo(page) {
-            const today = new Date('2025-06-12T12:00:00Z');
+            // Using a fixed date for consistent presentation based on the data provided
+            const today = new Date('2025-06-11T12:00:00Z');
             if (page === 1) return { title: 'Latest News', date: today };
+            
+            // The past articles start from "yesterday" relative to the latest news date
             const dateForPage = new Date(today);
             dateForPage.setDate(today.getDate() - (page - 1));
             const dayName = dateForPage.toLocaleDateString('en-US', { weekday: 'long' });
@@ -399,62 +420,63 @@
 
             if (articlesForDay.length === 0) { 
                 newsGrid.innerHTML = '<p class="text-center text-gray-500 col-span-full">No articles found for the selected criteria.</p>'; 
-                return; 
-            } 
+            } else {
+                articlesForDay.forEach(article => { 
+                    const isPremiumArticle = article.premium && !isSubscribed;
+                    const isPastPage = page > 1 && !isSubscribed;
+                    const shouldBeLocked = isPremiumArticle || isPastPage;
 
-            articlesForDay.forEach(article => { 
-                const isPremiumArticle = article.premium && !isSubscribed;
-                const isPastPage = page > 1 && !isSubscribed;
-                const shouldBeLocked = isPremiumArticle || isPastPage;
+                    const articleElement = document.createElement('article'); 
+                    articleElement.className = 'news-card'; 
+                    if (shouldBeLocked) articleElement.classList.add('locked'); 
+                    
+                    const safeSourceImageMap = window.sourceImageMap || {};
+                    const sourceInitial = (article.source && article.source.length > 0) ? article.source.charAt(0) : 'N';
+                    const imageUrl = safeSourceImageMap[article.source] || `https://placehold.co/50/2a2a2a/ffffff?text=${sourceInitial}`;
+                    
+                    const overlayText = page > 1 
+                        ? { title: 'Access Past News', text: 'Go premium to unlock the 30-day archive.' }
+                        : { title: 'Unlock Premium Content', text: 'Subscribe to get instant access.' };
 
-                const articleElement = document.createElement('article'); 
-                articleElement.className = 'news-card'; 
-                if (shouldBeLocked) articleElement.classList.add('locked'); 
-                
-                const safeSourceImageMap = window.sourceImageMap || {};
-                const sourceInitial = (article.source && article.source.length > 0) ? article.source.charAt(0) : 'N';
-                const imageUrl = safeSourceImageMap[article.source] || `https://placehold.co/50/2a2a2a/ffffff?text=${sourceInitial}`;
-                
-                const overlayText = page > 1 
-                    ? { title: 'Access Past News', text: 'Go premium to unlock the 30-day archive.' }
-                    : { title: 'Unlock Premium Content', text: 'Subscribe to get instant access.' };
-
-                const lockedOverlayHTML = `
-                    <a href="linqplus.html" class="locked-overlay">
-                        <div class="locked-content">
-                            <div class="locked-text-content">
-                                <h4 class="locked-title">${overlayText.title}</h4>
-                                <p class="locked-text">${overlayText.text}</p>
+                    const lockedOverlayHTML = `
+                        <a href="linqplus.html" class="locked-overlay">
+                            <div class="locked-content">
+                                <div class="locked-text-content">
+                                    <h4 class="locked-title">${overlayText.title}</h4>
+                                    <p class="locked-text">${overlayText.text}</p>
+                                </div>
+                                <button class="go-premium-button">Go Premium</button>
                             </div>
-                            <button class="go-premium-button">Go Premium</button>
-                        </div>
-                    </a>`;
+                        </a>`;
 
-                const sideLockIconHTML = `<div class="side-lock-icon"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg></div>`;
+                    const sideLockIconHTML = `<div class="side-lock-icon"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg></div>`;
 
-                articleElement.innerHTML = ` 
-                    ${shouldBeLocked ? lockedOverlayHTML + sideLockIconHTML : ''} 
-                    <div class="news-card-content"> 
-                        <div class="news-source-logo-container"><img src="${imageUrl}" alt="${article.source || 'News'}" class="news-source-logo" onerror="this.src='https://placehold.co/50/cccccc/333333?text=Err';"></div> 
-                        <div class="news-content-wrapper"> 
-                            <div class="news-text-content"> 
-                                <h3 class="news-title"><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3> 
-                                <div class="news-meta-tags"> 
-                                    <p class="news-meta">${new Date(article.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} &bull; ${article.source || 'N/A'}</p> 
-                                    <span class="news-tag">${article.category || 'General'}</span> 
+                    articleElement.innerHTML = ` 
+                        ${shouldBeLocked ? lockedOverlayHTML + sideLockIconHTML : ''} 
+                        <div class="news-card-content"> 
+                            <div class="news-source-logo-container"><img src="${imageUrl}" alt="${article.source || 'News'}" class="news-source-logo" onerror="this.src='[https://placehold.co/50/cccccc/333333?text=Err](https://placehold.co/50/cccccc/333333?text=Err)';"></div> 
+                            <div class="news-content-wrapper"> 
+                                <div class="news-text-content"> 
+                                    <h3 class="news-title"><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h3> 
+                                    <div class="news-meta-tags"> 
+                                        <p class="news-meta">${new Date(article.date).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})} &bull; ${article.source || 'N/A'}</p> 
+                                        <span class="news-tag">${article.category || 'General'}</span> 
+                                    </div> 
                                 </div> 
+                                <div class="favorite-btn-area"> 
+                                    <button class="favorite-btn" data-id="${article.id}" aria-label="Toggle Favorite"><svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 24 24"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 4h6a2 2 0 0 1 2 2v14l-5 -3l-5 3v-14a2 2 0 0 1 2 -2" /></svg></button> 
+                                </div>
                             </div> 
-                            <div class="favorite-btn-area"> 
-                                <button class="favorite-btn" data-id="${article.id}" aria-label="Toggle Favorite"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 4h6a2 2 0 0 1 2 2v14l-5 -3l-5 3v-14a2 2 0 0 1 2 -2" /></svg></button> 
-                            </div>
-                        </div> 
-                    </div>`; 
-                newsGrid.appendChild(articleElement); 
-            }); 
+                        </div>`; 
+                    newsGrid.appendChild(articleElement); 
+                });
+            }
+            
+            // Always call setupPagination after displaying articles to ensure it reflects the current state
+            setupPagination();
             updateFavoriteIcons();
         } 
 
-        // Renders the pagination controls, including Previous, Next, page numbers, and ellipses.
         function setupPagination() {
             paginationContainer.innerHTML = '';
             const pageCount = allDaysData.length;
@@ -463,18 +485,17 @@
             // Previous Button
             const prevButton = document.createElement('button');
             prevButton.className = 'pagination-btn';
-            prevButton.innerHTML = '&laquo;'; // « symbol
+            prevButton.innerHTML = '&laquo; Prev'; // « symbol
             prevButton.disabled = currentPage === 1;
             prevButton.addEventListener('click', () => {
                 if (currentPage > 1) {
                     displayArticlesForPage(currentPage - 1);
-                    setupPagination();
-                    mainContent.scrollIntoView();
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
                 }
             });
             paginationContainer.appendChild(prevButton);
 
-            // Logic to create and show page number buttons
+            // Page Number Buttons
             const pages = getPagesToShow(pageCount, currentPage);
             pages.forEach(page => {
                 if (page === '...') {
@@ -486,14 +507,11 @@
                     const button = document.createElement('button');
                     button.className = 'pagination-btn';
                     button.textContent = page;
-                    button.dataset.page = page;
                     if (page === currentPage) button.classList.add('active');
                     
-                    button.addEventListener('click', (e) => {
-                        const newPage = parseInt(e.currentTarget.dataset.page, 10);
-                        displayArticlesForPage(newPage);
-                        setupPagination();
-                        mainContent.scrollIntoView();
+                    button.addEventListener('click', () => {
+                        displayArticlesForPage(page);
+                        mainContent.scrollIntoView({ behavior: 'smooth' });
                     });
                     paginationContainer.appendChild(button);
                 }
@@ -502,28 +520,28 @@
             // Next Button
             const nextButton = document.createElement('button');
             nextButton.className = 'pagination-btn';
-            nextButton.innerHTML = '&raquo;'; // » symbol
+            nextButton.innerHTML = 'Next &raquo;'; // » symbol
             nextButton.disabled = currentPage === pageCount;
             nextButton.addEventListener('click', () => {
                 if (currentPage < pageCount) {
                     displayArticlesForPage(currentPage + 1);
-                    setupPagination();
-                    mainContent.scrollIntoView();
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
                 }
             });
             paginationContainer.appendChild(nextButton);
         }
         
-        // Helper function to determine which page numbers and ellipses to show
         function getPagesToShow(totalPages, currentPage) {
-            const range = 2;
             let pages = [];
+            // Show first page, last page, and pages around the current page
+            const range = 1;
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - range && i <= currentPage + range)) {
                     pages.push(i);
                 }
             }
             
+            // Add ellipses where there are gaps
             let pagesWithEllipsis = [];
             let lastPage = 0;
             for (const page of pages) {
@@ -541,7 +559,8 @@
             const button = e.target.closest('.filter-button');
             if (!button) return;
             button.classList.toggle('active');
-            displayArticlesForPage(currentPage);
+            // Reset to page 1 when category changes to avoid being on a page that doesn't exist for the new filter
+            displayArticlesForPage(1);
         }
         
         function handleFavoriteClick(e) {
