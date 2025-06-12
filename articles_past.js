@@ -110,6 +110,7 @@ window.pastArticles = [
         { id: "past_d15_1", category: 'Company News', title: "Chevron Launches Methane Detection Initiative in Permian", date: 'May 28, 2025', source: 'Rigzone', link: '#', premium: true },
         { id: "past_d15_2", category: 'Renewables', title: "Spain's Solar Installations Surge on Policy Incentives", date: 'May 28, 2025', source: 'BBC News', link: '#', premium: true },
         { id: "past_d15_3", category: 'Crude Oil', title: "WTI Slips Below $75 on Weak Global Demand Signals", date: 'May 28, 2025', source: 'Bloomberg', link: '#', premium: true },
-        { id: "past_d15_4", category: 'Market Analysis', title: "Oil Price Volatility Hits Multi-Year"
-    ],
+        { id: "past_d15_4", category: 'Market Analysis', title: "Oil Price Volatility Hits Multi-Year Lows", date: 'May 28, 2025', source: 'Financial Times', link: '#', premium: true },
+        { id: "past_d15_5", category: 'Natural Gas', title: "Russian Gas Exports to Europe Dip Amid Sanctions", date: 'May 28, 2025', source: 'Yahoo Finance', link: '#', premium: true }
+    ]
 ];
