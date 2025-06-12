@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     
+    <!-- Data Scripts -->
     <script src="source_images.js?v=20250612v2" defer></script>
     <script src="articles_present.js?v=20250612v2" defer></script>
     <script src="articles_premium.js?v=20250612v2" defer></script>
@@ -238,7 +239,7 @@
     <header class="hero-section">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <h1 class="hero-title">Your <span class="accent-text">Linq</span> to Energy News</h1>
-            <p class="hero-subtitle">My daily source for curated energy news and market intelligence.</p>
+            <p class="hero-subtitle">Your daily source for curated energy news and market intelligence.</p>
         </div>
     </header>
 
@@ -306,7 +307,13 @@
 
         // --- MAIN INITIALIZATION LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
-            initializeAppLogic();
+            // FIX: Wait for all data to be available before initializing
+            const dataCheckInterval = setInterval(() => {
+                if (window.presentDayArticles && window.premiumArticles && window.pastArticles && window.sourceImageMap) {
+                    clearInterval(dataCheckInterval);
+                    initializeAppLogic();
+                }
+            }, 100);
         });
         
         function initializeAppLogic() { 
@@ -326,7 +333,10 @@
             setupPagination();
             
             categoryList.addEventListener('click', handleCategoryFilter);
-            searchInput.addEventListener('input', () => displayArticlesForPage(currentPage));
+            searchInput.addEventListener('input', () => {
+                displayArticlesForPage(currentPage);
+                setupPagination(); // Refresh pagination on search
+            });
             newsGrid.addEventListener('click', handleFavoriteClick);
             window.addEventListener('resize', adjustLayoutForHeader);
             
@@ -542,6 +552,7 @@
             if (!button) return;
             button.classList.toggle('active');
             displayArticlesForPage(currentPage);
+             setupPagination();
         }
         
         function handleFavoriteClick(e) {
